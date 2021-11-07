@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
+    "start-dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -20,6 +21,8 @@
     "express": "^4.17.1",
     "express-graphql": "^0.12.0",
     "graphql": "^16.0.1",
+    "graphql-playground-middleware-express": "^1.7.23",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.12"
   }
 }

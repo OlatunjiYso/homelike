@@ -1,16 +1,19 @@
-const mongoose = require('mongoose');
 const { Apartment } = require('../Model/apartment');
-
+const { verifyUser, checkIDValid } = require('./helper');
 /**
  * @description A Resolver method to add new apartments
  * @param {Object} apartment - Apartment details
  * @returns {Object}
  */
-const addNewApartment = async (apartment) => {
+const addNewApartment = async (apartment, context) => {
     try {
+        const encodedUser = verifyUser(context);
+        if(!encodedUser) return unAuthorizedResponse();
+        const { userId } = encodedUser;
         const { lng, lat, city, country } = apartment;
         apartment.city = city.toLowerCase();
         apartment.country = country.toLowerCase();
+        apartment.addedBy = userId;
         const isValidCoordinates = validateCoordinates([lng, lat]);
         if (!isValidCoordinates) return inValidCoordinateResponse();
         const geometry = { type: 'Point', coordinates: [lng, lat] };
@@ -59,14 +62,9 @@ const fetchSpecifiedApartment = async (apartmentId) => {
         return serverErrorResponse(err.message);
     }
 }
-/**
- * An Helper method to check if suppliedID is a valid MongoDB ID
- * @param {ID} id 
- * @returns 
- */
-const checkIDValid = (id) => {
-    return mongoose.Types.ObjectId.isValid(id);
-}
+
+
+// HELPERS //
 /**
  * @description An Helper Method to Validate Coordinates.
  * @param {Array} coordinates Array of coordinates
@@ -101,9 +99,7 @@ const generateSearchFilter = (options) => {
     return filter;
 }
 
-
-
-// Responses
+// RESPONSES //
 const addApartmentSuccessResponse = (apartment) => ({
     success: true,
     statusCode: '201',
@@ -137,13 +133,17 @@ const inValidCoordinateResponse = () => ({
     success: false,
     statusCode: '400',
     message: 'The coordinates values entered is invalid. Please Enter a valid coordinate. Latitudes are between -90 and 90 while longitides are between -180 and 180'
-})
+});
+const unAuthorizedResponse = () => ({
+    success: false,
+    statusCode: '401',
+    message: 'You need to be signed in to perform this action. Kindly login to continue',
+});
 const serverErrorResponse = (errorMessage) => ({
     success: false,
     statusCode: '501',
     message: 'Internal Server error',
     errorMessage
 });
-
 
 module.exports = { addNewApartment, fetchApartments, fetchSpecifiedApartment };

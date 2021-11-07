@@ -1,9 +1,8 @@
 const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
 const User = require('../Model/user');
 const { Apartment } = require('../Model/apartment');
+const { verifyUser, checkIDValid, generateJwt } = require('./helper');
 const saltRounds = 10;
-
 /**
  * @description A Resolver method for registering a new user
  * @param {Object} user - user details
@@ -17,9 +16,10 @@ const addUser = async (user) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         user.password = hashedPassword;
         const newUser = new User(user);
-        await newUser.save();
+        const createdUser = await newUser.save();
         newUser.password = null; //knockOff password.
-        return successfulRegResponse(newUser);
+        token = generateJwt(createdUser)
+        return successfulRegResponse(newUser, token);
     }
     catch (err) {
         return serverErrorResponse(err.message);
@@ -30,7 +30,7 @@ const addUser = async (user) => {
  * @param {*} credentials - user claims.
  * @returns Object.
  */
-const authenticate = async (credentials) => {
+const authenticate = async (credentials, req) => {
     const { password, email } = credentials;
     try {
         const existingUser = await User.findOne({ email });
@@ -38,7 +38,8 @@ const authenticate = async (credentials) => {
         const hash = existingUser.password;
         const passwordIsValid = await bcrypt.compare(password, hash);
         if (!passwordIsValid) return failedAuthResponse();
-        return successfulAuthResponse(existingUser);
+        const token = generateJwt(existingUser)
+        return successfulAuthResponse(existingUser, token);
     }
     catch (err) {
         return serverErrorResponse(err.message);
@@ -50,13 +51,15 @@ const authenticate = async (credentials) => {
  * @param {ID} apartmentId - Id of favorite Apartment
  * @returns Object
  */
-const addToFavorites = async (ids) => {
-    const { userId, apartmentId } = ids;
+const addToFavorites = async (ids, context) => {
+    const { apartmentId } = ids;
     try {
+        const encodedUser = verifyUser(context);
+        if(!encodedUser) return unAuthorizedResponse();
+        const { userId } = encodedUser;
         const validId = checkIDValid(apartmentId);
         if (!validId) return inValidIDResponse();
         const user = await User.findById(userId);
-        if (!user) return notFoundSpecifedUserResponse();
         const validApartment = await verifyApartment(apartmentId);
         if (!validApartment) return inValidFavoriteResponse();
         const hasBeenAddedPreviously = await favoriteDuplicateCheck(user, apartmentId);
@@ -69,7 +72,6 @@ const addToFavorites = async (ids) => {
         return serverErrorResponse(err.message);
     }
 }
-
 /**
  * @description The Resolver method for finding a specified User. 
  * @param {ID} userId 
@@ -80,6 +82,13 @@ const findSpecifiedUser = async (userId) => {
         const validId = checkIDValid(userId);
         if (!validId) return inValidIDResponse();
         const user = await User.findById(userId)
+        .populate({ 
+            path: 'favorites',
+            populate: {
+              path: 'addedBy',
+              model: 'user'
+            } 
+         })
         if (!user) return notFoundSpecifedUserResponse();
         return foundSpecifedUserResponse(user)
     } catch (err) {
@@ -99,7 +108,6 @@ const findExistingUser = async (email) => {
     } catch (err) {
         console.log(err.message)
     }
-
 }
 /**
  *  Helper Method to check if an Apartment with specified ID exists
@@ -140,39 +148,30 @@ const favoriteDuplicateCheck = async (user, apartmentId) => {
     }
 }
 
-/**
- * An Helper method to check if suppliedID is a valid MongoDB ID
- * @param {ID} id 
- * @returns 
- */
-const checkIDValid = (id) => {
-    return mongoose.Types.ObjectId.isValid(id);
-}
-
-
-// Responses sent back to Resolver.
 const failedAuthResponse = () => ({
     success: false,
     statusCode: '401',
     message: 'Incorrect Email or password',
     user: null
 });
-const successfulAuthResponse = (user) => ({
+const successfulAuthResponse = (user, token) => ({
     success: true,
     statusCode: '200',
     message: 'Login successful',
-    user
+    user,
+    jwt: token
 });
 const conflictRegResponse = () => ({
     success: false,
     statusCode: '409',
     message: 'The email has been taken',
 });
-const successfulRegResponse = (user) => ({
+const successfulRegResponse = (user, token) => ({
     success: true,
     statusCode: '201',
     message: 'Signup successful',
-    user
+    user,
+    jwt: token
 });
 const inValidFavoriteResponse = () => ({
     success: false,
@@ -208,16 +207,16 @@ const inValidIDResponse = (errorMessage) => ({
     message: 'The Supplied ID cannot be cast to Object ID, please ensure that you are using a valid ID',
     errorMessage
 });
+const unAuthorizedResponse = () => ({
+    success: false,
+    statusCode: '401',
+    message: 'You need to be signed in to perform this action. Kindly login to continue',
+});
 const serverErrorResponse = (errorMessage) => ({
     success: false,
     statusCode: '501',
     message: 'Internal Server error',
     errorMessage
 });
-
-
-
-
-
 
 module.exports = { addUser, authenticate, addToFavorites, findSpecifiedUser };

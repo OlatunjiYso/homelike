@@ -25,8 +25,8 @@ const rootMutation = new GraphQLObjectType({
             },
             async resolve(parent, args){
                 const res = await addUser(args)
-                const { statusCode, success, message, user, errorMessage } = res;
-                return { response: {statusCode, success, message, errorMessage}, user }
+                const { statusCode, success, message, user, errorMessage, jwt } = res;
+                return { response: {statusCode, success, message, errorMessage}, user, jwt }
             }
         },
         addApartment: {
@@ -38,10 +38,9 @@ const rootMutation = new GraphQLObjectType({
                 city: { type: new GraphQLNonNull(GraphQLString) },
                 lng: { type: new GraphQLNonNull(GraphQLFloat) },
                 lat: { type: new GraphQLNonNull(GraphQLFloat) },
-                addedBy: { type: new GraphQLNonNull(GraphQLID) }
             },
-            async resolve(parent, args){
-                const res = await addNewApartment(args);
+            async resolve(parent, args, context){
+                const res = await addNewApartment(args, context);
                 const { statusCode, success, message, apartment,errorMessage } = res;
                 return { response: { statusCode, success, message, errorMessage }, apartment }
             }
@@ -49,11 +48,10 @@ const rootMutation = new GraphQLObjectType({
         addFavorite: {
             type: AddFavoriteResponse,
             args: {
-                userId: { type: new GraphQLNonNull(GraphQLID) },
                 apartmentId: { type: new GraphQLNonNull(GraphQLID) }
             },
-            async resolve(parent, args){
-               const res = await addToFavorites(args)
+            async resolve(parent, args, context){
+               const res = await addToFavorites(args, context)
                const { statusCode, success, message, user, errorMessage } = res;
                return { response: { statusCode, success, message, errorMessage }, user }
             }

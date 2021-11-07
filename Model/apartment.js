@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// const GeoSchema = new Schema({
-//     type: { type: 'String', default: 'Point' },
-//     coordinates: { type: [Number], index: '2dsphere' }
-// });
-
 const pointSchema = Schema({
     type: {
       type: String,
@@ -17,7 +12,6 @@ const pointSchema = Schema({
       required: true
     }
   });
-
 const ApartmentSchema = new Schema({
     description: { type: String },
     rooms: { type: Number, default: 1 },
@@ -33,7 +27,6 @@ const ApartmentSchema = new Schema({
         ref: 'user'
     }
 });
-
 
 const Apartment = mongoose.model('apartment', ApartmentSchema);
 module.exports = { Apartment, ApartmentSchema };
