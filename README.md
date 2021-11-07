@@ -2,19 +2,10 @@
 A Simple Real Estate management API
  
 ## Screenshots
-Include logo/demo screenshot etc.
 
-## Tech/framework used
-
-<b>Built with</b>
-- [Node](https://nodejs.org/en/)
-- [MongoDB](https://mongodb.com)
-- [GraphQL](https://graphql.org)
-- [Mongoose](https://mongoosejs.com)
 
 ## Getting started (Live App)
-This solution is hosted on. 
-- Navigate to `/playground` to get started.
+This solution is hosted on. [Here](https://ohmlike.herokuapp.com/playground)
 - To visit protected the routes, add your jwt token to the request headers. Like so:  
  `"Authorization": "Bearer eyJhbGciOiJIU........zI1NiIsInR5cCI6I"`
 
@@ -27,6 +18,14 @@ This solution is hosted on.
 - Navigate to `http://localhost:{PORT}/playground` to get started.
 - To visit protected the routes, add your jwt token to the request headers. Like so:  
  `"Authorization": "Bearer eyJhbGciOiJIU........zI1NiIsInR5cCI6I"`
+
+## Tech/framework used
+
+<b>Built with</b>
+- [Node](https://nodejs.org/en/)
+- [MongoDB](https://mongodb.com)
+- [GraphQL](https://graphql.org)
+- [Mongoose](https://mongoosejs.com)
 
 ## Features
 - Signup and Login.

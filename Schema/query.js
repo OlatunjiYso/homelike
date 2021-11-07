@@ -55,7 +55,7 @@ const rootQuery = new GraphQLObjectType({
         },
         apartment: {
             type: SpecifiedApartmentResponse,
-            args: { apartmentId: { type: GraphQLID } },
+            args: { apartmentId: { type: new graphql.GraphQLNonNull(GraphQLID)} },
             async resolve(parent, args, context) {
                 const res = await fetchSpecifiedApartment(args.apartmentId);
                 const { statusCode, message, success, apartment, errorMessage } = res;
