@@ -15,7 +15,7 @@ Include logo/demo screenshot etc.
 ## Getting started (Live App)
 This solution is hosted on. 
 - Navigate to `/playground` to get started.
-- To visit protected the routes, add your jwt token to the request headers. Like so:
+- To visit protected the routes, add your jwt token to the request headers. Like so:  
  `"Authorization": "Bearer eyJhbGciOiJIU........zI1NiIsInR5cCI6I"`
 
 ## Getting started (Local Setup).
@@ -25,7 +25,7 @@ This solution is hosted on.
 -  NODE_ENV in the .env file should be set to `development`.
 -  Run `npm start` to start the development server.
 - Navigate to `http://localhost:{PORT}/playground` to get started.
-- To visit protected the routes, add your jwt token to the request headers. Like so:
+- To visit protected the routes, add your jwt token to the request headers. Like so:  
  `"Authorization": "Bearer eyJhbGciOiJIU........zI1NiIsInR5cCI6I"`
 
 ## Features
