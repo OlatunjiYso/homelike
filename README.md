@@ -2,7 +2,7 @@
 A Simple Real Estate management API
  
 ## Screenshots
-
+<img src="https://user-images.githubusercontent.com/27797745/140667098-3417f326-8bd7-4c9c-a822-05505fcaa0c8.png" alt="screenshot1" width="400" style="margin-right:2px; display:inline-block;"/> <img src="https://user-images.githubusercontent.com/27797745/140667111-b7376e3d-5248-4dcd-affb-7dfce73fc5f8.png" alt="screenshot2" width="400" height="350" style="margin-left:2px; display:inline-block;"/>
 
 ## Getting started (Live App)
 This solution is hosted on. [Here](https://ohmlike.herokuapp.com/playground)
@@ -30,7 +30,7 @@ This solution is hosted on. [Here](https://ohmlike.herokuapp.com/playground)
 ## Features
 - Signup and Login.
 - Creating new Apartments.
-- Marking Aprtments as favorites.
+- Marking Apartments as favorites.
 - Searching for Apartments within a specified distance in KM.
 - Filtering Apartments based on Rooms, City and Country.
 - Fetching user information including favorite apartments.
