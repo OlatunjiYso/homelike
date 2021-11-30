@@ -8,23 +8,23 @@ const { verifyUser, checkIDValid } = require('./helper');
 const addNewApartment = async (apartment, context) => {
     try {
         const encodedUser = verifyUser(context);
-        if(!encodedUser) return unAuthorizedResponse();
+        if(!encodedUser) return apartmentServiceResponse(false, '401', 'login to continue', null, null, '')
         const { userId } = encodedUser;
         const { lng, lat, city, country } = apartment;
         apartment.city = city.toLowerCase();
         apartment.country = country.toLowerCase();
         apartment.addedBy = userId;
         const isValidCoordinates = validateCoordinates([lng, lat]);
-        if (!isValidCoordinates) return inValidCoordinateResponse();
+        if (!isValidCoordinates) return apartmentServiceResponse(false, '400', 'invalid coodinates', null, null, '')
         const geometry = { type: 'Point', coordinates: [lng, lat] };
         apartment.geometry = geometry;
         const newApartment = new Apartment(apartment);
         const res = await newApartment.save();
         const populated = Apartment.findById(res.id).populate('addedBy');
-        return addApartmentSuccessResponse(populated)
+        return apartmentServiceResponse(true, '201', 'apartment added', populated, null, '')
     }
     catch (err) {
-        return serverErrorResponse(err.message)
+        return apartmentServiceResponse(false, '503', 'internal server error', null, null, err.message)
     }
 }
 /**
@@ -37,10 +37,10 @@ const fetchApartments = async (filters) => {
     try {
         const apartments = await Apartment.find(searchFilter)
             .populate('addedBy');
-        return apartmentSearchResponse(apartments)
+        return apartmentServiceResponse(true, '200', '', null, apartments, '')
     }
     catch (err) {
-        return serverErrorResponse(err.message);
+        return apartmentServiceResponse(false, '503', 'internal server error', null, null, err.message)
     }
 }
 
@@ -52,14 +52,14 @@ const fetchApartments = async (filters) => {
 const fetchSpecifiedApartment = async (apartmentId) => {
     try {
         const validId = checkIDValid(apartmentId);
-        if (!validId) return inValidIDResponse();
+        if (!validId) return apartmentServiceResponse(false, '400', 'invalid ID', null, null, '');
         const apartment = await Apartment.findById(apartmentId)
             .populate('addedBy');
-        if (!apartment) return specifedApartmentNotFoundResponse();
-        return specifedApartmentFoundResponse(apartment);
+        if (!apartment) return apartmentServiceResponse(false, '404', 'apartment not found', null, null, err)
+        return apartmentServiceResponse(true, '200', 'apartment found', apartment, null, '')
     }
     catch (err) {
-        return serverErrorResponse(err.message);
+        return apartmentServiceResponse(false, '503', 'internal server error', null, null, err.message)
     }
 }
 
@@ -99,51 +99,23 @@ const generateSearchFilter = (options) => {
     return filter;
 }
 
-// RESPONSES //
-const addApartmentSuccessResponse = (apartment) => ({
-    success: true,
-    statusCode: '201',
-    message: 'Appartment successfully added',
-    apartment
-});
-const apartmentSearchResponse = (apartments) => ({
-    success: true,
-    statusCode: '200',
-    message: 'Apartments matching your search',
-    apartments
-});
-const specifedApartmentFoundResponse = (apartment) => ({
-    success: true,
-    statusCode: '200',
-    message: 'Apartment found',
-    apartment
-});
-const specifedApartmentNotFoundResponse = () => ({
-    success: false,
-    statusCode: '404',
-    message: 'Apartment with the specified id not found',
-});
-
-const inValidIDResponse = () => ({
-    success: false,
-    statusCode: '400',
-    message: 'The Supplied ID cannot be cast to Object ID, please ensure that you are using a valid ID'
-});
-const inValidCoordinateResponse = () => ({
-    success: false,
-    statusCode: '400',
-    message: 'The coordinates values entered is invalid. Please Enter a valid coordinate. Latitudes are between -90 and 90 while longitides are between -180 and 180'
-});
-const unAuthorizedResponse = () => ({
-    success: false,
-    statusCode: '401',
-    message: 'You need to be signed in to perform this action. Kindly login to continue',
-});
-const serverErrorResponse = (errorMessage) => ({
-    success: false,
-    statusCode: '501',
-    message: 'Internal Server error',
-    errorMessage
+/**
+ * @desc a method to return service response
+ * @param {boolean} success 
+ * @param {string} statusCode 
+ * @param {string} message 
+ * @param {Apartment} apartment 
+ * @param {Apartmnet[]} apartments 
+ * @param {string} err 
+ * @returns  {object}
+ */
+const apartmentServiceResponse = (success, statusCode, message, apartment, apartments, err) => ({
+    success,
+    statusCode,
+    message,
+    apartment,
+    apartments,
+    errorMessage: err
 });
 
 module.exports = { addNewApartment, fetchApartments, fetchSpecifiedApartment };
